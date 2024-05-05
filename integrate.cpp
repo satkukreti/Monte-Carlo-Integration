@@ -15,19 +15,26 @@ int main (int argc, char* argv[]){
 
     srand(time(0));
 
-    double a = 0;
-    double b = 1;
+    double a = stod(argv[1]);
+    double b = stod(argv[2]);
 
-    double avg;
+    if(a == b){ cerr << "Error: a cannot equal b\n"; return 1;}
+    
+    int n = stoi(argv[3]);
 
-    for(int i = 0; i < 1000; i++){
-        double rdm = ((double)rand() / RAND_MAX)*(b - a) + a;
-        double toIntegrate = hx(rdm);
-        avg += toIntegrate;
+    //Kahan summation to mitigate overflow
+    double sum = 0.0;
+    double compensation = 0.0;
+
+    for(int i = 0; i < n; i++){
+        double rdm = ((double)rand() / RAND_MAX) * (b - a) + a;
+        double y = hx(rdm) - compensation;
+        double t = sum + y;
+        compensation = (t - sum) - y;
+        sum = t;
     }
 
-    avg /= 1000;
-    avg *= (b-a);
+    double avg = sum / n * (b - a);
     
     cout << avg << endl;
 
