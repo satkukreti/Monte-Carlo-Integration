@@ -2,26 +2,16 @@
 #include <cmath>
 #include <cstdlib>
 #include <time.h>
+#include <thread>
+#include <vector>
 
 using namespace std;
 
-inline double hx (double x){ return sin(x)/x; }
+double a, b;
 
-int main (int argc, char* argv[]){
-    /*if(argc != 5){
-        cerr << "Format Error: ./integrate a b n n_threads\n";
-        return 1;
-    }*/
+inline double hx(double x){ return sin(x)/x; }
 
-    srand(time(0));
-
-    double a = stod(argv[1]);
-    double b = stod(argv[2]);
-
-    if(a == b){ cerr << "Error: a cannot equal b\n"; return 1;}
-    
-    int n = stoi(argv[3]);
-
+inline double MonteCarlo(int n){
     //Kahan summation to mitigate overflow
     double sum = 0.0;
     double compensation = 0.0;
@@ -35,9 +25,47 @@ int main (int argc, char* argv[]){
     }
 
     double avg = sum / n * (b - a);
-    
-    cout << avg << endl;
+    return avg;
+} 
 
+int main (int argc, char* argv[]){
+    if(argc != 5){
+        cerr << "Format Error: ./integrate a b n n_threads\n";
+        return 1;
+    }
+
+    srand(time(0));
+
+    a = stod(argv[1]);
+    b = stod(argv[2]);
+
+    if(a == b){ cerr << "Error: a cannot equal b\n"; return 1;}
+    
+    int n = stoi(argv[3]);
+    int n_thread = stoi(argv[4]);
+    int n_per_t = n/n_thread;
+    int r = n % n_thread;
+
+    vector<thread> tcontainer(n_thread);
+    vector<double> results(n_thread);
+
+    for(int i = 0; i < n_thread; i++){
+        tcontainer[i] = thread([&results, i, n_per_t, r]() {
+            results[i] = MonteCarlo(i < r ? n_per_t + 1 : n_per_t);
+        });
+    }
+
+    for(int i = 0; i < n_thread; i++){
+        tcontainer[i].join();
+    }
+
+    long double sum = 0.0;
+    for(int i = 0; i < n_thread; i++){
+        sum += results[i];
+    }
+
+    cout << sum/n_thread << endl;
+    
     return 0;
 }
 

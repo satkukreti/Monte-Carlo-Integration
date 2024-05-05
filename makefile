@@ -1,7 +1,7 @@
 all: integrate
 
 integrate: integrate.cpp
-	g++ integrate.cpp -o integrate
+	g++ -std=c++11 -pthread integrate.cpp -o integrate
 
 clean:
 	rm -f integrate
