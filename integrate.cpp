@@ -13,15 +13,17 @@ inline double hx(double x){ return sin(x)/x; }
 
 inline double MonteCarlo(int n){
     //Kahan summation to mitigate overflow
+    srand(time(0));
     double sum = 0.0;
-    double compensation = 0.0;
+    //double compensation = 0.0;
 
     for(int i = 0; i < n; i++){
         double rdm = ((double)rand() / RAND_MAX) * (b - a) + a;
-        double y = hx(rdm) - compensation;
-        double t = sum + y;
-        compensation = (t - sum) - y;
-        sum = t;
+        //double y = hx(rdm) - compensation;
+        //double t = sum + y;
+        //compensation = (t - sum) - y;
+        //sum = t;
+        sum += hx(rdm);
     }
 
     double avg = sum / n * (b - a);
@@ -34,7 +36,7 @@ int main (int argc, char* argv[]){
         return 1;
     }
 
-    srand(time(0));
+    //srand(time(0));
 
     a = stod(argv[1]);
     b = stod(argv[2]);
