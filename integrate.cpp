@@ -9,20 +9,17 @@ using namespace std;
 
 double a, b;
 
+//function to integrate
 inline double hx(double x){ return sin(x)/x; }
 
 inline double MonteCarlo(int n){
-    //Kahan summation to mitigate overflow
     srand(time(0));
     double sum = 0.0;
-    //double compensation = 0.0;
 
     for(int i = 0; i < n; i++){
         double rdm = ((double)rand() / RAND_MAX) * (b - a) + a;
-        //double y = hx(rdm) - compensation;
-        //double t = sum + y;
-        //compensation = (t - sum) - y;
-        //sum = t;
+        while(rdm == 0)
+            rdm = ((double)rand() / RAND_MAX) * (b - a) + a;
         sum += hx(rdm);
     }
 
@@ -31,13 +28,13 @@ inline double MonteCarlo(int n){
 } 
 
 int main (int argc, char* argv[]){
+    //params
     if(argc != 5){
         cerr << "Format Error: ./integrate a b n n_threads\n";
         return 1;
     }
 
-    //srand(time(0));
-
+    //input
     a = stod(argv[1]);
     b = stod(argv[2]);
 
@@ -45,10 +42,13 @@ int main (int argc, char* argv[]){
     
     int n = stoi(argv[3]);
     int n_thread = stoi(argv[4]);
+    
+    //divide the load evenly among threads
     int n_per_t = n/n_thread;
     int r = n % n_thread;
 
     vector<thread> tcontainer(n_thread);
+    //store threaded results
     vector<double> results(n_thread);
 
     for(int i = 0; i < n_thread; i++){
@@ -61,12 +61,13 @@ int main (int argc, char* argv[]){
         tcontainer[i].join();
     }
 
-    long double sum = 0.0;
+    //calculate sum
+    double sum = 0.0;
     for(int i = 0; i < n_thread; i++){
         sum += results[i];
     }
 
-    cout << sum/n_thread << endl;
+    cout << sum/n_thread << "\n";
     
     return 0;
 }
