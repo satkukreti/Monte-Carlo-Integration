@@ -1,9 +1,11 @@
 #include <iostream>
-#include <cmath>
-#include <cstdlib>
 #include <time.h>
-#include <thread>
+#include <chrono>
+#include <iomanip>
 #include <vector>
+#include <thread>
+#include <cmath>
+#include <limits>
 
 using namespace std;
 
@@ -13,7 +15,9 @@ double a, b;
 inline double hx(double x){ return sin(x)/x; }
 
 inline double MonteCarlo(int n){
-    srand(time(0));
+    //sets random seed using system time, pid, and mem address
+    unsigned seed = chrono::system_clock::now().time_since_epoch().count() + getpid() + reinterpret_cast<uintptr_t>(&n);
+    srand(seed);
     double sum = 0.0;
 
     for(int i = 0; i < n; i++){
@@ -67,7 +71,7 @@ int main (int argc, char* argv[]){
         sum += results[i];
     }
 
-    cout << sum/n_thread << "\n";
+    cout << setprecision(numeric_limits<double>::max_digits10) << sum/n_thread << "\n";
     
     return 0;
 }
